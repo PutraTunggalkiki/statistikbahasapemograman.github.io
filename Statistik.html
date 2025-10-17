@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistik Bahasa Pemrograman</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        /* New 4-column grid for statistics */
+        .stats-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px) {
+            .stats-grid-4 {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+
+        .stat-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Different color for new stats */
+        .stat-item.secondary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Statistik Bahasa Pemrograman</h1>
+            <p>Data Penggunaan Bahasa Pemrograman dari Mahasiswa</p>
+        </header>
+
+        <div class="card" style="margin-bottom: 30px;">
+            <h2>📝 Pendahuluan</h2>
+            <div style="color: #555; line-height: 1.8; font-size: 1em;">
+                <p style="margin-bottom: 12px;">
+                    Laporan ini menyajikan analisis komprehensif mengenai penggunaan bahasa pemrograman di kalangan mahasiswa. Data dikumpulkan dari 28 mahasiswa yang mengambil mata kuliah pemrograman dalam berbagai semester.
+                </p>
+                <p style="margin-bottom: 12px;">
+                    Hasil penelitian menunjukkan bahwa <strong>C++ mendominasi</strong> dengan persentase penggunaan sebesar <strong>78.57%</strong>, menjadikannya bahasa pemrograman pilihan utama dalam pembelajaran. Hal ini menunjukkan penekanan kuat pada pembelajaran bahasa pemrograman yang statically-typed dan berorientasi pada performa tinggi.
+                </p>
+                <p style="margin-bottom: 12px;">
+                    Sementara itu, bahasa pemrograman lain seperti Python (10.71%), JavaScript (3.57%), PHP (3.57%), dan Syntax (3.57%) menunjukkan penggunaan yang lebih terbatas namun tetap relevan dalam kurikulum pembelajaran. Diversifikasi ini mencerminkan upaya untuk memberikan pengetahuan lintas platform kepada mahasiswa.
+                </p>
+                <p>
+                    Visualisasi data di bawah ini dirancang untuk memberikan pemahaman mendalam tentang distribusi penggunaan bahasa pemrograman, membantu dalam evaluasi kurikulum dan perencanaan pembelajaran di masa depan.
+                </p>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-bottom: 30px; animation-delay: 0.0s;">
+            <h2>🔢 Statistik Kuantitatif (Jumlah Pengguna)</h2>
+            <div class="stats-grid-4">
+                <div class="stat-item secondary">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">Modus (Mode)</div>
+                </div>
+                <div class="stat-item secondary">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">Median</div>
+                </div>
+                <div class="stat-item secondary">
+                    <div class="stat-number">5.6</div>
+                    <div class="stat-label">Rata-rata (Mean)</div>
+                </div>
+                <div class="stat-item secondary">
+                    <div class="stat-number">9.21</div>
+                    <div class="stat-label">Simpangan Baku</div>
+                </div>
+            </div>
+            <p style="font-size: 0.9em; color: #555;">
+                *Statistik dihitung dari data jumlah pengguna per bahasa. Simpangan baku yang tinggi ($\approx$ 9.21) menunjukkan variasi yang besar antara jumlah pengguna C++ dan bahasa lainnya.
+            </p>
+        </div>
+        <div class="content">
+            <div class="card">
+                <h2>📈 Ringkasan Data</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">28</div>
+                        <div class="stat-label">Total Mahasiswa</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Bahasa Unik</div>
+                    </div>
+                </div>
+
+                <h3 style="color: #333; margin-top: 25px; margin-bottom: 15px; font-size: 1.1em;">Distribusi Penggunaan:</h3>
+                <table>
+                    <tr>
+                        <th>Bahasa</th>
+                        <th>Jumlah</th>
+                    </tr>
+                    <tr>
+                        <td><strong>C++</strong></td>
+                        <td>22</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Python</strong></td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td><strong>JavaScript</strong></td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PHP</strong></td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Syntax</strong></td>
+                        <td>1</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>🥧 Persentase Penggunaan</h2>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Perbandingan Detail</h2>
+                <div style="margin-top: 20px;">
+                    <div style="margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>C++</strong>
+                            <span style="color: #667eea;">78.57%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78.57%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>Python</strong>
+                            <span style="color: #667eea;">10.71%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 10.71%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>JavaScript</strong>
+                            <span style="color: #667eea;">3.57%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 3.57%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>PHP</strong>
+                            <span style="color: #667eea;">3.57%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 3.57%;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>Syntax</strong>
+                            <span style="color: #667eea;">3.57%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 3.57%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📉 Grafik Kolom</h2>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🍩 Visualisasi Doughnut</h2>
+                <div class="chart-container">
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>ℹ Informasi</h2>
+                <div style="line-height: 1.8; color: #555;">
+                    <p><strong>Total Data:</strong> 28 mahasiswa</p>
+                    <p><strong>Bahasa Dominan:</strong> C++ (78.57%)</p>
+                    <p><strong>Periode:</strong> Semester 1-3</p>
+                    <p style="margin-top: 15px; font-size: 0.95em; color: #999;">
+                        Data ini menunjukkan bahwa C++ adalah bahasa pemrograman yang paling banyak digunakan dalam pembelajaran, diikuti oleh Python dengan persentase yang jauh lebih kecil.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 Statistik Bahasa Pemrograman | Data Responsif</p>
+        </div>
+    </div>
+
+    <script>
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['C++', 'Python', 'JavaScript', 'PHP', 'Syntax'],
+                datasets: [{
+                    data: [22, 3, 1, 1, 1],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#4facfe',
+                        '#00f2fe'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Bar Chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['C++', 'Python', 'JavaScript', 'PHP', 'Syntax'],
+                datasets: [{
+                    label: 'Jumlah Pengguna',
+                    data: [22, 3, 1, 1, 1],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#4facfe',
+                        '#00f2fe'
+                    ],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 25
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: { font: { size: 12 } }
+                    }
+                }
+            }
+        });
+
+        // Doughnut Chart
+        const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+        new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['C++', 'Python', 'JavaScript', 'PHP', 'Syntax'],
+                datasets: [{
+                    data: [22, 3, 1, 1, 1],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#4facfe',
+                        '#00f2fe'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
